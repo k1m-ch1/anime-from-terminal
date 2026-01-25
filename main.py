@@ -51,10 +51,10 @@ def format_episodes(episode_list:list) -> dict:
 
     is_filler = lambda episode: bool(episode["is_filler"])
     ret_dict = dict()
-    get_display_info = lambda episode: f"{episode['title']} (#{episode['number']}) {'filler' if is_filler(episode) else ''}"
+    get_display_info = lambda episode: f"{Fore.CYAN}{episode['title']} {Fore.YELLOW}(#{episode['number']}) {Back.BLUE + Fore.RED+ Style.BRIGHT + 'filler' if is_filler(episode) else ''}{Style.RESET_ALL}"
     for episode in episodes_list:
         to_display = get_display_info(episode)
-        ret_dict[to_display] = episode|{"display":to_display}
+        ret_dict[strip_ansi(to_display)] = episode|{"display":to_display}
     return ret_dict
 
 if __name__ == "__main__":
@@ -74,4 +74,13 @@ if __name__ == "__main__":
     episodes_dict = fetch_info.get_episodes(chosen_anime["id"])
     episodes_list = episodes_dict["episodes"]
     lookup_episodes_list = format_episodes(episodes_list)
-    print(lookup_episodes_list.keys())
+    #print(lookup_episodes_list.keys())
+    choice = iterfzf.iterfzf(map(lambda episode: episode["display"],
+                                lookup_episodes_list.values()),
+                             ansi=True,
+                             prompt="Choose episodes: "
+                             )
+    chosen_episode = lookup_episodes_list[choice]
+
+    print(f"{Fore.MAGENTA} You've chosen: ")
+    pretty_print_dict(chosen_episode)
