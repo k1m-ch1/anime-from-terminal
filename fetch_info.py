@@ -111,9 +111,9 @@ def get_stream(episode_id:str, server_name:str, type:str) -> dict:
 
 if __name__ == "__main__":
     #print(get_search_results("boruto", 1))
-    #print(get_all_search_results("one-piece"))
-    ANIME_ID = "boruto-naruto-next-generations-8143"
-    EPISODE_ID = get_episodes(ANIME_ID)["episodes"][0]["id"]
-    SERVERS  = get_servers(EPISODE_ID)
-    SERVER = SERVERS["servers"]["sub"][0]
-    print(json.dumps(get_stream(EPISODE_ID, SERVER["name"], SERVER["type"]), indent=2))
+    print(get_all_search_results("to-love-ru"))
+    #ANIME_ID = "boruto-naruto-next-generations-8143"
+    #EPISODE_ID = get_episodes(ANIME_ID)["episodes"][0]["id"]
+    #SERVERS  = get_servers(EPISODE_ID)
+    #SERVER = SERVERS["servers"]["sub"][0]
+    #print(json.dumps(get_stream(EPISODE_ID, SERVER["name"], SERVER["type"]), indent=2))
