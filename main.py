@@ -9,6 +9,7 @@ import subprocess
 init(autoreset=True)
 
 def strip_ansi(text):
+    """Strips all of the ansi code from a string"""
     return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
 
 def get_lookup_search_results(search_results:list) -> dict:
@@ -54,7 +55,7 @@ def get_lookup_episodes(episode_list:list) -> dict:
     is_filler = lambda episode: bool(episode["is_filler"])
     ret_dict = dict()
     get_display_info = lambda episode: f"{Fore.CYAN + episode['title']} {Fore.YELLOW}(#{episode['number']}) {Back.RED + Fore.RESET+ Style.BRIGHT + 'filler' if is_filler(episode) else ''}{Style.RESET_ALL}"
-    for episode in episodes_list:
+    for episode in episode_list:
         to_display = get_display_info(episode)
         ret_dict[strip_ansi(to_display)] = episode|{"display":to_display}
     return ret_dict
@@ -112,65 +113,86 @@ def open_video(video:dict) -> None:
                     video['url']
                     ] + subtitles_list)
 
-if __name__ == "__main__":
+def main():
     anime_name = input(INPUT_PROMPT)
     search_results = fetch_info.get_all_search_results(anime_name)
     lookup_search_results = get_lookup_search_results(search_results)
     choice = iterfzf.iterfzf(map(lambda result: result["display"],lookup_search_results.values()),
-                             ansi=True,
-                             prompt="Choose anime: ")
+                            ansi=True,
+                            prompt="Choose anime: ")
 
     chosen_anime = lookup_search_results[choice]
-    
+
+
     print(f"{Fore.MAGENTA} You've chosen: ")
     pretty_print_dict(lookup_search_results[choice])
 
-    # now we have the anime, we need to get episodes now
+# now we have the anime, we need to get episodes now
     episodes_dict = fetch_info.get_episodes(chosen_anime["id"])
     episodes_list = episodes_dict["episodes"]
     lookup_episodes_list = get_lookup_episodes(episodes_list)
     choice = iterfzf.iterfzf(map(lambda episode: episode["display"],
                                 lookup_episodes_list.values()),
-                             ansi=True,
-                             prompt="Choose episodes: "
-                             )
+                            ansi=True,
+                            prompt="Choose episodes: "
+                            )
+
     chosen_episode = lookup_episodes_list[choice]
 
-    print(f"{Fore.MAGENTA} You've chosen: ")
-    pretty_print_dict(chosen_episode)
+    while True:
+        servers = fetch_info.get_servers(chosen_episode["id"])
+        server_list = servers["servers"]
+        flattened_servers = reduce(lambda a, b: a + b,
+                                server_list.values()
+                                )
 
-    servers = fetch_info.get_servers(chosen_episode["id"])
-    server_list = servers["servers"]
-    flattened_servers = reduce(lambda a, b: a + b,
-                               server_list.values()
-                               )
+# this is a misnomer, it's not a list
+        lookup_server_list = get_lookup_servers(flattened_servers)
 
-    # this is a misnomer, it's not a list
-    lookup_server_list = get_lookup_servers(flattened_servers)
+        choice = iterfzf.iterfzf(map(lambda server: server["display"],
+                                    lookup_server_list.values()),
+                                ansi=True,
+                                prompt="Choose server: "
+                                )
 
-    choice = iterfzf.iterfzf(map(lambda server: server["display"],
-                                lookup_server_list.values()),
-                             ansi=True,
-                             prompt="Choose server: "
-                             )
+        server_chosen = lookup_server_list[choice]
 
-    server_chosen = lookup_server_list[choice]
+        stream = fetch_info.get_stream(chosen_episode["id"],
+                                    server_chosen["name"],
+                                    server_chosen["type"]
+                                    )
 
-    stream = fetch_info.get_stream(chosen_episode["id"],
-                          server_chosen["name"],
-                          server_chosen["type"]
-                          )
+        video_list = stream["videos"]
 
-    video_list = stream["videos"]
+        lookup_videos = get_lookup_videos(video_list)
 
-    lookup_videos = get_lookup_videos(video_list)
+        choice = iterfzf.iterfzf(map(lambda video: video["display"],
+                                    lookup_videos.values()),
+                                ansi=True,
+                                prompt="Choose videos: "
+                                )
 
-    choice = iterfzf.iterfzf(map(lambda video: video["display"],
-                        lookup_videos.values()),
-                    ansi=True,
-                    prompt="Choose videos: "
-                    )
+        video = lookup_videos[choice]
 
-    video = lookup_videos[choice]
+        open_video(video)
 
-    open_video(video)
+        #after opening the video, go to new episode (if can)
+        episode_number = int(chosen_episode["number"])
+        if  episode_number >= len(episodes_list):
+            break
+        chosen_episode = episodes_list[episode_number]
+
+        print(f"\n{Fore.MAGENTA} Continuing to episode {Fore.YELLOW}{episode_number + 1} ")
+        pretty_print_dict(chosen_episode)
+
+        confirm = None
+        while confirm not in {'y', 'n'}:
+            confirm = input(f"{Fore.CYAN} Do you want to continue? {Fore.YELLOW}(Y/n){Style.RESET_ALL} ").lower()
+
+        if confirm == 'n':
+            break
+
+
+
+if __name__ == "__main__":
+    main()
