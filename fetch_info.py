@@ -2,7 +2,8 @@ import requests
 import json
 
 BASE_URL = "https://anime.k1mch1.space"
-
+# max retries for problematic endpoints
+MAX_RETRIES = 5
 def get_search_results(search_query:str, page:int) -> dict:
     """
     Gets the search results from the query only on a specifc page.
@@ -80,7 +81,7 @@ def get_servers(episode_id:str) -> dict:
 
     return res.json()
 
-def get_stream(episode_id:str, server:str, type:str) -> dict:
+def get_stream(episode_id:str, server_name:str, type:str) -> dict:
     """
     Gets the m3u8 stream and also the referrer with a list of subtitles too.
 
@@ -94,13 +95,17 @@ def get_stream(episode_id:str, server:str, type:str) -> dict:
     """
 
     # TODO this isn't quite reliable (might send an error)
-    res = requests.get(
-        f"{BASE_URL}/watch/{episode_id}",
-        params={
-            "server":server,
-            "type":type
-        }
-    )
+    res = requests.Response()
+    for _ in range(MAX_RETRIES):
+        res = requests.get(
+            f"{BASE_URL}/watch/{episode_id}",
+            params={
+                "server":server_name,
+                "type":type
+            }
+        )
+        if "detail" not in res.json():
+            break
 
     return res.json()
 

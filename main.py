@@ -4,6 +4,7 @@ import json
 from colorama import init, Fore, Back, Style
 import re
 from functools import reduce
+import subprocess
 
 init(autoreset=True)
 
@@ -52,11 +53,64 @@ def get_lookup_episodes(episode_list:list) -> dict:
 
     is_filler = lambda episode: bool(episode["is_filler"])
     ret_dict = dict()
-    get_display_info = lambda episode: f"{Fore.CYAN}{episode['title']} {Fore.YELLOW}(#{episode['number']}) {Back.RED + Fore.RESET+ Style.BRIGHT + 'filler' if is_filler(episode) else ''}{Style.RESET_ALL}"
+    get_display_info = lambda episode: f"{Fore.CYAN + episode['title']} {Fore.YELLOW}(#{episode['number']}) {Back.RED + Fore.RESET+ Style.BRIGHT + 'filler' if is_filler(episode) else ''}{Style.RESET_ALL}"
     for episode in episodes_list:
         to_display = get_display_info(episode)
         ret_dict[strip_ansi(to_display)] = episode|{"display":to_display}
     return ret_dict
+
+def get_lookup_servers(server_list:list) -> dict:
+    """
+    Formats the list of servers such that it can be accessed nicely through `iterfzf`.
+
+    Args:
+        server_list: the list of servers
+
+    Return:
+        A dictionary of with a nice string representation of the dictionary as key
+    """
+
+    ret_dict = dict()
+    get_display_info = lambda server: f"{Fore.CYAN + server['name']}{Fore.YELLOW} ({server['type']})"
+    for server in server_list:
+        to_display = get_display_info(server)
+        ret_dict[strip_ansi(to_display)] = server | {'display':to_display}
+    return ret_dict
+
+def get_lookup_videos(video_list:list) -> dict:
+    """
+    Formats the list of videos such that it can be nicely accessed through `iterfzf`.
+
+    Args:
+        video_list: the list of videos 
+
+    Return:
+        A dictionary with keys as a string representation of videos (to display through `iterfzf`)
+    """
+
+    ret_dict = dict()
+    get_display_info = lambda video: Fore.CYAN + video['quality']
+    for video in video_list:
+        to_display = get_display_info(video)
+        ret_dict[strip_ansi(to_display)] = video | {"display":to_display}
+    return ret_dict
+
+def open_video(video:dict) -> None:
+    """
+    Opens the video using mpv while handling all the subtitles and referrer.
+    
+    Args:
+        video: a video dictionary containing the stream, the referrer, and the subtitles
+
+    Return:
+        None
+    """
+    # preparing the subtitles list
+    subtitles_list = [f"--sub-file={subtitle['url']}" for subtitle in video['subtitles']]
+    subprocess.run(["mpv",
+                    f"--referrer={video['referer']}", # referrer is misspelled, cuz of the api
+                    video['url']
+                    ] + subtitles_list)
 
 if __name__ == "__main__":
     anime_name = input(INPUT_PROMPT)
@@ -67,15 +121,14 @@ if __name__ == "__main__":
                              prompt="Choose anime: ")
 
     chosen_anime = lookup_search_results[choice]
-    #
-    #print(f"{Fore.MAGENTA} You've chosen: ")
-    #pretty_print_dict(formatted_search_results[choice])
+    
+    print(f"{Fore.MAGENTA} You've chosen: ")
+    pretty_print_dict(lookup_search_results[choice])
 
     # now we have the anime, we need to get episodes now
     episodes_dict = fetch_info.get_episodes(chosen_anime["id"])
     episodes_list = episodes_dict["episodes"]
     lookup_episodes_list = get_lookup_episodes(episodes_list)
-    #print(lookup_episodes_list.keys())
     choice = iterfzf.iterfzf(map(lambda episode: episode["display"],
                                 lookup_episodes_list.values()),
                              ansi=True,
@@ -91,7 +144,33 @@ if __name__ == "__main__":
     flattened_servers = reduce(lambda a, b: a + b,
                                server_list.values()
                                )
-    print(flattened_servers)
 
+    # this is a misnomer, it's not a list
+    lookup_server_list = get_lookup_servers(flattened_servers)
 
+    choice = iterfzf.iterfzf(map(lambda server: server["display"],
+                                lookup_server_list.values()),
+                             ansi=True,
+                             prompt="Choose server: "
+                             )
 
+    server_chosen = lookup_server_list[choice]
+
+    stream = fetch_info.get_stream(chosen_episode["id"],
+                          server_chosen["name"],
+                          server_chosen["type"]
+                          )
+
+    video_list = stream["videos"]
+
+    lookup_videos = get_lookup_videos(video_list)
+
+    choice = iterfzf.iterfzf(map(lambda video: video["display"],
+                        lookup_videos.values()),
+                    ansi=True,
+                    prompt="Choose videos: "
+                    )
+
+    video = lookup_videos[choice]
+
+    open_video(video)
