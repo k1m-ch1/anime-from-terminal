@@ -1,4 +1,4 @@
-import fetch_info
+from . import fetch_info
 import iterfzf
 import json
 from colorama import init, Fore, Back, Style
