@@ -3,13 +3,14 @@ import iterfzf
 import json
 from colorama import init, Fore, Back, Style
 import re
+from functools import reduce
 
 init(autoreset=True)
 
 def strip_ansi(text):
     return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
 
-def format_search_results(search_results:list) -> dict:
+def get_lookup_search_results(search_results:list) -> dict:
     """
     Formats the search results into a key that can be chosen, and all the info stored in the value.
 
@@ -39,7 +40,7 @@ def pretty_print_dict(input_dict:dict) -> None:
     for k, v in input_dict.items():
         print(f"{Fore.YELLOW} {k}{Style.RESET_ALL}: {v}")
 
-def format_episodes(episode_list:list) -> dict:
+def get_lookup_episodes(episode_list:list) -> dict:
     """
     Formats the lists of episodes such that the key can be displayed in iterfzf
 
@@ -51,7 +52,7 @@ def format_episodes(episode_list:list) -> dict:
 
     is_filler = lambda episode: bool(episode["is_filler"])
     ret_dict = dict()
-    get_display_info = lambda episode: f"{Fore.CYAN}{episode['title']} {Fore.YELLOW}(#{episode['number']}) {Back.BLUE + Fore.RED+ Style.BRIGHT + 'filler' if is_filler(episode) else ''}{Style.RESET_ALL}"
+    get_display_info = lambda episode: f"{Fore.CYAN}{episode['title']} {Fore.YELLOW}(#{episode['number']}) {Back.RED + Fore.RESET+ Style.BRIGHT + 'filler' if is_filler(episode) else ''}{Style.RESET_ALL}"
     for episode in episodes_list:
         to_display = get_display_info(episode)
         ret_dict[strip_ansi(to_display)] = episode|{"display":to_display}
@@ -60,12 +61,12 @@ def format_episodes(episode_list:list) -> dict:
 if __name__ == "__main__":
     anime_name = input(INPUT_PROMPT)
     search_results = fetch_info.get_all_search_results(anime_name)
-    formatted_search_results = format_search_results(search_results)
-    choice = iterfzf.iterfzf(map(lambda result: result["display"],formatted_search_results.values()),
+    lookup_search_results = get_lookup_search_results(search_results)
+    choice = iterfzf.iterfzf(map(lambda result: result["display"],lookup_search_results.values()),
                              ansi=True,
                              prompt="Choose anime: ")
 
-    chosen_anime = formatted_search_results[choice]
+    chosen_anime = lookup_search_results[choice]
     #
     #print(f"{Fore.MAGENTA} You've chosen: ")
     #pretty_print_dict(formatted_search_results[choice])
@@ -73,7 +74,7 @@ if __name__ == "__main__":
     # now we have the anime, we need to get episodes now
     episodes_dict = fetch_info.get_episodes(chosen_anime["id"])
     episodes_list = episodes_dict["episodes"]
-    lookup_episodes_list = format_episodes(episodes_list)
+    lookup_episodes_list = get_lookup_episodes(episodes_list)
     #print(lookup_episodes_list.keys())
     choice = iterfzf.iterfzf(map(lambda episode: episode["display"],
                                 lookup_episodes_list.values()),
@@ -84,3 +85,13 @@ if __name__ == "__main__":
 
     print(f"{Fore.MAGENTA} You've chosen: ")
     pretty_print_dict(chosen_episode)
+
+    servers = fetch_info.get_servers(chosen_episode["id"])
+    server_list = servers["servers"]
+    flattened_servers = reduce(lambda a, b: a + b,
+                               server_list.values()
+                               )
+    print(flattened_servers)
+
+
+
