@@ -6,6 +6,6 @@
   - [x] getting servers
   - [x] fetching the stream data
 - [x] Figure out a way to query using `iterfzf` correctly
-- [] Figure out all the prompt and the flow of the program
+- [x] Figure out all the prompt and the flow of the program
 - [] Handle errors
 - [] Kinda wanna implement an mcp server for the api too (but that's for another time)
