@@ -1,2 +1,4 @@
 **/test/
 **/.venv/
+results.json
+**/__pycache__/

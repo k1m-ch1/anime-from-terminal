@@ -2,9 +2,32 @@ import requests
 import json
 
 BASE_URL = "https://anime.k1mch1.space"
-def get_search_results(search_query:str) -> dict:
+
+def get_search_results(search_query:str, page:int) -> dict:
     """
-    Gets the search results from the query.
+    Gets the search results from the query only on a specifc page.
+
+    It simply fetches the search results from the anime info api, while also handling errors.
+
+    Args:
+        search_query: simply what you'd search from the search bar.
+        page: the page number we're trying to reach for.
+
+    Returns:
+        A dictionary of the search results.
+    """
+    res = requests.get(
+        f"{BASE_URL}/search",
+        params={
+            'q':search_query,
+            'page':page
+        }
+    )
+    return res.json()
+
+def get_all_search_results(search_query:str) -> list:
+    """
+    Gets all of the search results from the query.
 
     It simply fetches the search results from the anime info api, while also handling errors.
 
@@ -14,7 +37,15 @@ def get_search_results(search_query:str) -> dict:
     Returns:
         A dictionary of the search results.
     """
-    return dict
+    result_list = []
+    page_number = 1
+    while True:
+        result_dict = get_search_results(search_query, page_number)
+        if "detail" in result_dict.keys():
+            break
+        result_list += result_dict["results"]
+        page_number += 1
+    return result_list
 
 def get_episodes(anime_id:str) -> dict:
     """
@@ -26,7 +57,12 @@ def get_episodes(anime_id:str) -> dict:
     Returns:
         A dictionary of the episodes of the anime.
     """
-    return dict
+
+    res =  requests.get(
+        f"{BASE_URL}/episodes/{anime_id}"
+    )
+
+    return res.json()
 
 def get_servers(episode_id:str) -> dict:
     """
@@ -38,7 +74,11 @@ def get_servers(episode_id:str) -> dict:
         A dictionary of the available servers
     """
 
-    return dict
+    res = requests.get(
+        f"{BASE_URL}/servers/{episode_id}"
+    )
+
+    return res.json()
 
 def get_stream(episode_id:str, server:str, type:str) -> dict:
     """
@@ -53,7 +93,22 @@ def get_stream(episode_id:str, server:str, type:str) -> dict:
         A dictionary of the stream information
     """
 
-    return dict
+    # TODO this isn't quite reliable (might send an error)
+    res = requests.get(
+        f"{BASE_URL}/watch/{episode_id}",
+        params={
+            "server":server,
+            "type":type
+        }
+    )
+
+    return res.json()
 
 if __name__ == "__main__":
-    pass
+    #print(get_search_results("boruto", 1))
+    #print(get_all_search_results("one-piece"))
+    ANIME_ID = "boruto-naruto-next-generations-8143"
+    EPISODE_ID = get_episodes(ANIME_ID)["episodes"][0]["id"]
+    SERVERS  = get_servers(EPISODE_ID)
+    SERVER = SERVERS["servers"]["sub"][0]
+    print(json.dumps(get_stream(EPISODE_ID, SERVER["name"], SERVER["type"]), indent=2))
