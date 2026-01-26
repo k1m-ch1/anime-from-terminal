@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: anime-from-terminal
-Version: 0.5.0
-Summary: Add your description here
+Version: 0.7.0
+Summary: Watch anime from your terminal
 Requires-Python: >=3.14
 License-File: LICENSE
 Requires-Dist: colorama>=0.4.6

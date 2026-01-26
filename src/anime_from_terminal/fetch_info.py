@@ -7,7 +7,7 @@ BASE_URL = "https://anime.k1mch1.space"
 # max retries for problematic endpoints
 MAX_RETRIES = 5
 # number of pages to fetch in parallel (for searching)
-PAGES_PER_BATCH = 5
+PAGES_PER_BATCH = 10
 def get_search_results(search_query:str, page:int) -> dict:
     """
     Gets the search results from the query only on a specifc page.
@@ -59,7 +59,7 @@ def get_all_search_results(search_query:str) -> list:
     while not stop_event.is_set():
         start_page = fetch_number * PAGES_PER_BATCH
         threads = []
-        for page in range(start_page, start_page + PAGES_PER_BATCH + 1):
+        for page in range(start_page + 1, start_page + PAGES_PER_BATCH + 1):
             thread = threading.Thread(target=worker, args=(page, ))
             thread.start()
             threads.append(thread)
