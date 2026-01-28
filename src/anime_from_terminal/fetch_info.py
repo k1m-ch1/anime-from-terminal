@@ -105,7 +105,7 @@ def get_servers(episode_id:str) -> dict:
 
     return res.json()
 
-def get_stream(episode_id:str, server_name:str, type:str) -> dict:
+def get_stream(episode_id:str, server_name:str, server_type:str) -> dict:
     """
     Gets the m3u8 stream and also the referrer with a list of subtitles too.
 
@@ -125,7 +125,7 @@ def get_stream(episode_id:str, server_name:str, type:str) -> dict:
             f"{BASE_URL}/watch/{episode_id}",
             params={
                 "server":server_name,
-                "type":type
+                "type":server_type
             }
         )
         if "detail" not in res.json():
@@ -135,7 +135,7 @@ def get_stream(episode_id:str, server_name:str, type:str) -> dict:
 
 if __name__ == "__main__":
     #print(get_search_results("boruto", 1))
-    print(get_all_search_results("to-love-ru"))
+    print(get_all_search_results("one-piece"))
     #ANIME_ID = "boruto-naruto-next-generations-8143"
     #EPISODE_ID = get_episodes(ANIME_ID)["episodes"][0]["id"]
     #SERVERS  = get_servers(EPISODE_ID)
