@@ -4,6 +4,9 @@ import iterfzf
 from .main import get_lookup_search_results
 import subprocess
 import json
+from colorama import init, Fore
+
+init()
 
 # tempfile for when we're converting stuff
 
@@ -30,10 +33,15 @@ def main():
         anime_id = args.anime_id
     elif args.search != None:
         search_results = fetch_info.get_all_search_results(args.search)
-        search_results = get_lookup_search_results(search_results)
-        choice = iterfzf.iterfzf(map(lambda x: x["display"], search_results.values()),
-                                 ansi=True)
-        anime_id = search_results[choice]["id"]
+        if len(search_results) == 0:
+            exit(f"{Fore.RED}Error:{Fore.RESET} no search results found")
+        elif len(search_results) == 1:
+            anime_id = search_results[0]["id"]
+        else:
+            search_results = get_lookup_search_results(search_results)
+            choice = iterfzf.iterfzf(map(lambda x: x["display"], search_results.values()),
+                                     ansi=True)
+            anime_id = search_results[choice]["id"]
     else:
         raise parser.error(message="Please enter an anime-id using --anime-id or search an anime using --search")
 
@@ -49,7 +57,7 @@ def main():
 
         # choose the first server
         server = filtered_servers = servers["servers"][args.type][0]
-        print(server)
+        #print(server)
 
         stream = fetch_info.get_stream(episode_id=episode["id"],
                                        server_name=server["name"],
@@ -71,7 +79,7 @@ def main():
 
         subprocess.run(yt_dlp_cmd)
 
-        print(json.dumps(episode, indent=2))
+        #print(json.dumps(episode, indent=2))
 
         subtitle_list = video["subtitles"]
 
@@ -95,7 +103,8 @@ def main():
                        "-c:s", "srt",
                        output_video
                        ]
-        print(ffmpeg_cmd)
+        
+        #print(ffmpeg_cmd)
         subprocess.run(ffmpeg_cmd)
         remove_tmp_cmd = [
             "rm", TMP_FILE
