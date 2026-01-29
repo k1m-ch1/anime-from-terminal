@@ -2,6 +2,7 @@ LICENSE
 README.md
 pyproject.toml
 src/anime_from_terminal/__init__.py
+src/anime_from_terminal/anime_dl.py
 src/anime_from_terminal/fetch_info.py
 src/anime_from_terminal/main.py
 src/anime_from_terminal.egg-info/PKG-INFO

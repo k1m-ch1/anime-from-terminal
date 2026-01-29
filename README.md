@@ -1,6 +1,6 @@
 # Requirements
 
-`python` must be installed
+- `python` must be installed (if you're on windows, go to microsoft store or something to install it)
 
 Check by running:
 
@@ -8,7 +8,7 @@ Check by running:
 python --version
 ```
 
-[`mpv`](https://mpv.io/installation/) must be installed
+- [`mpv`](https://mpv.io/installation/) must be installed
 
 Check by running:
 
@@ -29,7 +29,27 @@ Here are the steps we used:
 3. Add it as an environmental variable following [this tutorial](https://youtu.be/ow2jROvxyH4?si=78CbPF8AE2st7Vtd)
 4. Check that it works by doing `mpv --version`, if not, find another tutorial (sorry, Windows kinda sucks for developing)
 
+## (Optional) for downloading anime
+
+- `ffmpeg` must be installed
+
+```bash
+ffmpeg -version
+```
+
+On linux, you know what to do. Idk how you'd install it on windows tho.
+
+- `yt-dlp` must be installed
+
+```bash
+yt-dlp -version
+```
+
+I would honestly just install the [binaries (executable)](https://github.com/yt-dlp/yt-dlp/releases) and add it to path for both linux and windows. 
+
 # Installation
+
+## Watch anime
 
 It's very easy to try it out using `uv`.
 
@@ -49,6 +69,31 @@ Now run:
 
 ```bash
 anime
+```
+
+## Download anime
+
+Download a whole anime season in one command (with subs too).
+
+First, create a directory where you want all the episodes to be stored in and `cd` into it.
+
+```bash
+mkdir baan
+cd baan
+```
+
+Now just run
+
+```bash
+uvx --from anime-from-terminal anime_dl --search "baan" --type "sub"
+```
+
+Enjoy.
+
+A handy command to sort the episodes:
+
+```bash
+perl-rename 's/Ep\. (\d+): Episode \1/"Ep. ".sprintf("%04d",$1).": Episode ".sprintf("%04d",$1)/e' *.mkv
 ```
 
 # About
