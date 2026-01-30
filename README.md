@@ -47,7 +47,7 @@ yt-dlp -version
 
 I would honestly just install the [binaries (executable)](https://github.com/yt-dlp/yt-dlp/releases) and add it to path for both linux and windows. 
 
-# Installation
+# Usage
 
 ## Watch anime
 
@@ -96,6 +96,10 @@ A handy command to sort the episodes:
 perl-rename 's/Ep\. (\d+): Episode \1/"Ep. ".sprintf("%04d",$1).": Episode ".sprintf("%04d",$1)/e' *.mkv
 ```
 
+## Clanker Support!
+
+Watch anime through MCP! Connect to an AI agent and let pull up the anime for you.
+
 # About
 
 This is simply a `cli` front end for the hi-anime scraping API by @f4rh4d-4hmed [this is their repo](https://github.com/f4rh4d-4hmed/HiAnime-Api).
@@ -109,5 +113,5 @@ This is simply a `cli` front end for the hi-anime scraping API by @f4rh4d-4hmed 
   - [x] fetching the stream data
 - [x] Figure out a way to query using `iterfzf` correctly
 - [x] Figure out all the prompt and the flow of the program
-- [] Handle errors
-- [] Kinda wanna implement an mcp server for the api too (but that's for another time)
+- [x] Handle errors
+- [x] Kinda wanna implement an mcp server for the api too (but that's for another time)
