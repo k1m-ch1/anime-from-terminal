@@ -100,6 +100,28 @@ perl-rename 's/Ep\. (\d+): Episode \1/"Ep. ".sprintf("%04d",$1).": Episode ".spr
 
 Watch anime through MCP! Connect to an AI agent and let pull up the anime for you.
 
+Start the mcp server:
+
+```bash
+uvx --from anime-from-terminal mcp --host 0.0.0.0 --port 6969
+```
+
+Connect to the mcp server through an mcp client. For example, in `opencode`, edit the `~/.config/opencode/opencode.json` and input:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "anime-from-terminal": {
+      "command":["uvx", "--from", "anime-from-terminal", "mcp"]
+      "type": "remote",
+      "enabled": true,
+      "url": "http://localhost:6767/mcp",
+    }
+  }
+}
+```
+
 # About
 
 This is simply a `cli` front end for the hi-anime scraping API by @f4rh4d-4hmed [this is their repo](https://github.com/f4rh4d-4hmed/HiAnime-Api).
