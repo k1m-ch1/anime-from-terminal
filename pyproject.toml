@@ -1,6 +1,6 @@
 [project]
 name = "anime-from-terminal"
-version = "1.1.0"
+version = "1.2.0"
 readme = "README.md"
 description = "Watch anime from your terminal"
 requires-python = ">=3.14"
