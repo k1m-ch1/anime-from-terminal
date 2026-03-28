@@ -1,3 +1,5 @@
+Edit 28-03-2026: hianime.to doesn't work anymore. So this program doesn't work anymore...
+
 # Requirements
 
 - `python` must be installed (if you're on windows, go to microsoft store or something to install it)
